@@ -14,21 +14,29 @@ dotenv.config();
 
 const app = express();
 
+// ===============================
 // DATABASE
+// ===============================
 connectDB();
 
+// ===============================
 // MIDDLEWARE
+// ===============================
 app.use(cors());
 app.use(express.json());
 
+// ===============================
 // ROUTES
+// ===============================
 app.use("/api/auth", authRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/appointment", appointmentRoutes);
 app.use("/api/billing", billingRoutes);
 
+// ===============================
 // HOME ROUTE
+// ===============================
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
@@ -36,7 +44,9 @@ app.get("/", (req, res) => {
   });
 });
 
+// ===============================
 // TEST ROUTES
+// ===============================
 app.get("/api/patient-test", (req, res) => {
   res.status(200).json({
     success: true,
@@ -58,7 +68,9 @@ app.get("/api/billing-test", (req, res) => {
   });
 });
 
+// ===============================
 // SERVER
+// ===============================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
