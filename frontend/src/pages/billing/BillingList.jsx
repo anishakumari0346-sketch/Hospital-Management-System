@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../../services/app";
 
 const BillingList = () => {
   const [bills, setBills] = useState([]);
@@ -9,14 +9,15 @@ const BillingList = () => {
 
   const navigate = useNavigate();
 
+  // ===============================
+  // FETCH BILLS
+  // ===============================
   const fetchBills = async () => {
     try {
       setLoading(true);
       setMessage("");
 
-      const response = await axios.get(
-        "http://localhost:5000/api/billing"
-      );
+      const response = await API.get("/billing");
 
       setBills(
         response.data.billings ||
@@ -35,10 +36,16 @@ const BillingList = () => {
     }
   };
 
+  // ===============================
+  // LOAD BILLS
+  // ===============================
   useEffect(() => {
     fetchBills();
   }, []);
 
+  // ===============================
+  // LOADING
+  // ===============================
   if (loading) {
     return (
       <div style={styles.center}>
@@ -50,7 +57,9 @@ const BillingList = () => {
   return (
     <div style={styles.container}>
 
-      {/* Header */}
+      {/* ===============================
+          HEADER
+      =============================== */}
       <div style={styles.header}>
 
         <h2 style={styles.heading}>
@@ -59,7 +68,7 @@ const BillingList = () => {
 
         <div style={styles.buttonGroup}>
 
-          {/* Add Billing Button */}
+          {/* ADD BILLING */}
           <button
             onClick={() => navigate("/billing/add")}
             style={styles.addButton}
@@ -67,7 +76,7 @@ const BillingList = () => {
             + Add Billing
           </button>
 
-          {/* Refresh Button */}
+          {/* REFRESH */}
           <button
             onClick={fetchBills}
             style={styles.refreshButton}
@@ -78,14 +87,18 @@ const BillingList = () => {
         </div>
       </div>
 
-      {/* Error Message */}
+      {/* ===============================
+          ERROR MESSAGE
+      =============================== */}
       {message && (
         <p style={styles.error}>
           {message}
         </p>
       )}
 
-      {/* No Bills */}
+      {/* ===============================
+          NO BILLS
+      =============================== */}
       {bills.length === 0 ? (
         <div style={styles.empty}>
 
@@ -101,14 +114,15 @@ const BillingList = () => {
         </div>
       ) : (
 
-        /* Billing Table */
+        /* ===============================
+           BILLING TABLE
+        =============================== */
         <div style={styles.tableContainer}>
 
           <table style={styles.table}>
 
             <thead>
               <tr>
-
                 <th style={styles.th}>
                   Patient
                 </th>
@@ -148,7 +162,6 @@ const BillingList = () => {
                 <th style={styles.th}>
                   Date
                 </th>
-
               </tr>
             </thead>
 
@@ -158,14 +171,14 @@ const BillingList = () => {
 
                 <tr key={bill._id}>
 
-                  {/* Patient */}
+                  {/* PATIENT */}
                   <td style={styles.td}>
                     {bill.patient?.name ||
                       bill.patient ||
                       "-"}
                   </td>
 
-                  {/* Appointment */}
+                  {/* APPOINTMENT */}
                   <td style={styles.td}>
                     {bill.appointment?.appointmentDate
                       ? new Date(
@@ -176,32 +189,32 @@ const BillingList = () => {
                       : "-"}
                   </td>
 
-                  {/* Consultation */}
+                  {/* CONSULTATION */}
                   <td style={styles.td}>
-                    ₹{bill.consultationFee || 0}
+                    ₹{Number(bill.consultationFee || 0)}
                   </td>
 
-                  {/* Medicine */}
+                  {/* MEDICINE */}
                   <td style={styles.td}>
-                    ₹{bill.medicineCharges || 0}
+                    ₹{Number(bill.medicineCharges || 0)}
                   </td>
 
-                  {/* Tests */}
+                  {/* TEST */}
                   <td style={styles.td}>
-                    ₹{bill.testCharges || 0}
+                    ₹{Number(bill.testCharges || 0)}
                   </td>
 
-                  {/* Other */}
+                  {/* OTHER */}
                   <td style={styles.td}>
-                    ₹{bill.otherCharges || 0}
+                    ₹{Number(bill.otherCharges || 0)}
                   </td>
 
-                  {/* Total */}
+                  {/* TOTAL */}
                   <td style={styles.total}>
-                    ₹{bill.totalAmount || 0}
+                    ₹{Number(bill.totalAmount || 0)}
                   </td>
 
-                  {/* Payment Status */}
+                  {/* PAYMENT STATUS */}
                   <td style={styles.td}>
 
                     <span
@@ -223,18 +236,17 @@ const BillingList = () => {
                             : "#991b1b",
                       }}
                     >
-                      {bill.paymentStatus ||
-                        "Pending"}
+                      {bill.paymentStatus || "Pending"}
                     </span>
 
                   </td>
 
-                  {/* Payment Method */}
+                  {/* PAYMENT METHOD */}
                   <td style={styles.td}>
                     {bill.paymentMethod || "-"}
                   </td>
 
-                  {/* Created Date */}
+                  {/* CREATED DATE */}
                   <td style={styles.td}>
                     {bill.createdAt
                       ? new Date(
@@ -252,7 +264,6 @@ const BillingList = () => {
           </table>
 
         </div>
-
       )}
 
     </div>
@@ -288,7 +299,6 @@ const styles = {
     alignItems: "center",
   },
 
-  /* Add Billing Button */
   addButton: {
     backgroundColor: "#16a34a",
     color: "#fff",
@@ -299,7 +309,6 @@ const styles = {
     fontWeight: "600",
   },
 
-  /* Refresh Button */
   refreshButton: {
     backgroundColor: "#2563eb",
     color: "#fff",

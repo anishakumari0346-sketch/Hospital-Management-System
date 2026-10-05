@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../services/app";
 
 const EditBilling = () => {
   const [bills, setBills] = useState([]);
@@ -24,9 +24,7 @@ const EditBilling = () => {
       setLoading(true);
       setMessage("");
 
-      const response = await axios.get(
-        "http://localhost:5000/api/billing"
-      );
+      const response = await API.get("/billing");
 
       setBills(
         response.data.billings ||
@@ -54,10 +52,10 @@ const EditBilling = () => {
     setSelectedBill(bill);
 
     setFormData({
-      consultationFee: bill.consultationFee || "",
-      medicineCharges: bill.medicineCharges || "",
-      testCharges: bill.testCharges || "",
-      otherCharges: bill.otherCharges || "",
+      consultationFee: bill.consultationFee ?? "",
+      medicineCharges: bill.medicineCharges ?? "",
+      testCharges: bill.testCharges ?? "",
+      otherCharges: bill.otherCharges ?? "",
       paymentStatus: bill.paymentStatus || "Pending",
       paymentMethod: bill.paymentMethod || "Cash",
     });
@@ -94,8 +92,8 @@ const EditBilling = () => {
       setSaving(true);
       setMessage("");
 
-      const response = await axios.put(
-        `http://localhost:5000/api/billing/${selectedBill._id}`,
+      const response = await API.put(
+        `/billing/${selectedBill._id}`,
         {
           consultationFee: Number(
             formData.consultationFee || 0
@@ -197,7 +195,7 @@ const EditBilling = () => {
                     </td>
 
                     <td style={styles.total}>
-                      ₹{bill.totalAmount || 0}
+                      ₹{Number(bill.totalAmount || 0)}
                     </td>
 
                     <td style={styles.td}>
@@ -256,7 +254,6 @@ const EditBilling = () => {
           <h3>Edit Bill</h3>
 
           <form onSubmit={handleSubmit}>
-            {/* Consultation Fee */}
             <label style={styles.label}>
               Consultation Fee
             </label>
@@ -270,7 +267,6 @@ const EditBilling = () => {
               style={styles.input}
             />
 
-            {/* Medicine Charges */}
             <label style={styles.label}>
               Medicine Charges
             </label>
@@ -284,7 +280,6 @@ const EditBilling = () => {
               style={styles.input}
             />
 
-            {/* Test Charges */}
             <label style={styles.label}>
               Test Charges
             </label>
@@ -298,7 +293,6 @@ const EditBilling = () => {
               style={styles.input}
             />
 
-            {/* Other Charges */}
             <label style={styles.label}>
               Other Charges
             </label>
@@ -312,13 +306,11 @@ const EditBilling = () => {
               style={styles.input}
             />
 
-            {/* Total */}
             <div style={styles.totalBox}>
               <span>Total Amount</span>
               <strong>₹{totalAmount}</strong>
             </div>
 
-            {/* Payment Status */}
             <label style={styles.label}>
               Payment Status
             </label>
@@ -329,18 +321,11 @@ const EditBilling = () => {
               onChange={handleChange}
               style={styles.input}
             >
-              <option value="Pending">
-                Pending
-              </option>
-              <option value="Paid">
-                Paid
-              </option>
-              <option value="Partial">
-                Partial
-              </option>
+              <option value="Pending">Pending</option>
+              <option value="Paid">Paid</option>
+              <option value="Partial">Partial</option>
             </select>
 
-            {/* Payment Method */}
             <label style={styles.label}>
               Payment Method
             </label>
@@ -357,7 +342,6 @@ const EditBilling = () => {
               <option value="Online">Online</option>
             </select>
 
-            {/* Buttons */}
             <div style={styles.buttons}>
               <button
                 type="submit"

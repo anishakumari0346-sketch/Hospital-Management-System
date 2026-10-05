@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../services/app";
 
 const EditPatientList = () => {
   const [patients, setPatients] = useState([]);
@@ -24,11 +24,9 @@ const EditPatientList = () => {
     try {
       setLoading(true);
 
-      const response = await axios.get(
-        "http://localhost:5000/api/patient"
-      );
+      const response = await API.get("/patient");
 
-      setPatients(response.data.patients || []);
+      setPatients(response.data.patients || response.data || []);
     } catch (error) {
       console.error("Fetch Patients Error:", error);
 
@@ -85,8 +83,8 @@ const EditPatientList = () => {
       setSaving(true);
       setMessage("");
 
-      const response = await axios.put(
-        `http://localhost:5000/api/patient/${selectedPatient._id}`,
+      const response = await API.put(
+        `/patient/${selectedPatient._id}`,
         {
           ...formData,
           age: Number(formData.age),
@@ -299,7 +297,9 @@ const EditPatientList = () => {
                 disabled={saving}
                 style={styles.saveButton}
               >
-                {saving ? "Updating..." : "Update Patient"}
+                {saving
+                  ? "Updating..."
+                  : "Update Patient"}
               </button>
 
               <button

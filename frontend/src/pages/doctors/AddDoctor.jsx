@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../../services/app";
 
 const AddDoctor = () => {
   const [formData, setFormData] = useState({
@@ -43,14 +43,11 @@ const AddDoctor = () => {
     setMessage("");
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/doctor",
-        {
-          ...formData,
-          experience: Number(formData.experience) || 0,
-          consultationFee: Number(formData.consultationFee),
-        }
-      );
+      const response = await API.post("/doctor", {
+        ...formData,
+        experience: Number(formData.experience) || 0,
+        consultationFee: Number(formData.consultationFee) || 0,
+      });
 
       console.log("Doctor added:", response.data);
 
@@ -164,7 +161,7 @@ const AddDoctor = () => {
                   checked={formData.availableDays.includes(day)}
                   onChange={handleDayChange}
                 />
-                {day}
+                {" "}{day}
               </label>
             ))}
           </div>
@@ -182,7 +179,10 @@ const AddDoctor = () => {
           <button
             type="submit"
             disabled={loading}
-            style={styles.button}
+            style={{
+              ...styles.button,
+              opacity: loading ? 0.7 : 1,
+            }}
           >
             {loading ? "Adding Doctor..." : "Add Doctor"}
           </button>

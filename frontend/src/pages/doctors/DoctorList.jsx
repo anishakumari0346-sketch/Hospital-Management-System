@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import API from "../../services/api";
+import API from "../../services/app";
 
 const DoctorList = () => {
   const navigate = useNavigate();
@@ -10,9 +10,7 @@ const DoctorList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ==========================
-  // FETCH DOCTORS
-  // ==========================
+  // Fetch doctors
   const fetchDoctors = async () => {
     try {
       setLoading(true);
@@ -20,12 +18,13 @@ const DoctorList = () => {
 
       const res = await API.get("/doctor");
 
-      setDoctors(res.data.doctors || []);
-    } catch (error) {
-      console.error(
-        "Fetch Doctors Error:",
-        error
+      setDoctors(
+        res.data.doctors ||
+          res.data ||
+          []
       );
+    } catch (error) {
+      console.error("Fetch Doctors Error:", error);
 
       setError(
         error.response?.data?.message ||
@@ -40,9 +39,7 @@ const DoctorList = () => {
     fetchDoctors();
   }, []);
 
-  // ==========================
-  // DELETE DOCTOR
-  // ==========================
+  // Delete doctor
   const deleteDoctor = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this doctor?"
@@ -55,16 +52,11 @@ const DoctorList = () => {
     try {
       await API.delete(`/doctor/${id}`);
 
-      alert(
-        "Doctor deleted successfully!"
-      );
+      alert("Doctor deleted successfully!");
 
-      fetchDoctors();
+      await fetchDoctors();
     } catch (error) {
-      console.error(
-        "Delete Doctor Error:",
-        error
-      );
+      console.error("Delete Doctor Error:", error);
 
       alert(
         error.response?.data?.message ||
@@ -73,9 +65,7 @@ const DoctorList = () => {
     }
   };
 
-  // ==========================
-  // LOADING
-  // ==========================
+  // Loading
   if (loading) {
     return (
       <div className="text-center p-4">
@@ -86,15 +76,11 @@ const DoctorList = () => {
 
   return (
     <div>
-      {/* ==========================
-          PAGE HEADER
-      ========================== */}
+      {/* Page Header */}
       <div className="page-header d-flex justify-content-between align-items-center">
         <div>
           <h2>Doctors</h2>
-          <p>
-            Manage hospital doctors
-          </p>
+          <p>Manage hospital doctors</p>
         </div>
 
         <button
@@ -107,18 +93,14 @@ const DoctorList = () => {
         </button>
       </div>
 
-      {/* ==========================
-          ERROR
-      ========================== */}
+      {/* Error */}
       {error && (
         <div className="alert alert-danger">
           {error}
         </div>
       )}
 
-      {/* ==========================
-          EMPTY STATE
-      ========================== */}
+      {/* Empty State */}
       {!error && doctors.length === 0 && (
         <div className="content-card text-center p-4">
           <h4>No doctors found</h4>
@@ -139,9 +121,7 @@ const DoctorList = () => {
         </div>
       )}
 
-      {/* ==========================
-          DOCTOR TABLE
-      ========================== */}
+      {/* Doctor Table */}
       {doctors.length > 0 && (
         <div className="content-card">
           <div className="table-responsive">
@@ -164,48 +144,39 @@ const DoctorList = () => {
                 {doctors.map(
                   (doctor, index) => (
                     <tr key={doctor._id}>
-                      {/* Number */}
-                      <td>
-                        {index + 1}
-                      </td>
+                      <td>{index + 1}</td>
 
-                      {/* Name */}
                       <td>
                         <strong>
                           Dr. {doctor.name}
                         </strong>
                       </td>
 
-                      {/* Specialization */}
                       <td>
                         {doctor.specialization ||
                           "-"}
                       </td>
 
-                      {/* Email */}
                       <td>
                         {doctor.email || "-"}
                       </td>
 
-                      {/* Phone */}
                       <td>
                         {doctor.phone || "-"}
                       </td>
 
-                      {/* Experience */}
                       <td>
                         {doctor.experience ?? 0}{" "}
                         years
                       </td>
 
-                      {/* Fee */}
                       <td>
                         ₹
-                        {doctor.consultationFee ??
-                          0}
+                        {Number(
+                          doctor.consultationFee || 0
+                        )}
                       </td>
 
-                      {/* Status */}
                       <td>
                         <span
                           className={`badge ${
@@ -220,7 +191,6 @@ const DoctorList = () => {
                         </span>
                       </td>
 
-                      {/* Actions */}
                       <td>
                         <div className="d-flex gap-2">
                           <button

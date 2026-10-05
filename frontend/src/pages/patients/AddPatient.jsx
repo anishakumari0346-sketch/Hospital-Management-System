@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../../services/app";
 
 const AddPatient = () => {
   const [formData, setFormData] = useState({
@@ -36,7 +36,7 @@ const AddPatient = () => {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        age: Number(formData.age),
+        age: Number(formData.age) || 0,
         gender: formData.gender,
         address: formData.address,
         bloodGroup: formData.bloodGroup,
@@ -45,8 +45,8 @@ const AddPatient = () => {
 
       console.log("Sending:", patientData);
 
-      const response = await axios.post(
-        "http://localhost:5000/api/patient",
+      const response = await API.post(
+        "/patient",
         patientData
       );
 
@@ -65,8 +65,11 @@ const AddPatient = () => {
         medicalHistory: "",
       });
     } catch (error) {
-      console.log("FULL ERROR:", error);
-      console.log("SERVER ERROR:", error.response?.data);
+      console.error("Add Patient Error:", error);
+      console.error(
+        "Server Error:",
+        error.response?.data
+      );
 
       setMessage(
         error.response?.data?.message ||
@@ -80,7 +83,9 @@ const AddPatient = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.heading}>Add Patient</h2>
+        <h2 style={styles.heading}>
+          Add Patient
+        </h2>
 
         <form onSubmit={handleSubmit}>
           <input
@@ -130,10 +135,21 @@ const AddPatient = () => {
             required
             style={styles.input}
           >
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
+            <option value="">
+              Select Gender
+            </option>
+
+            <option value="Male">
+              Male
+            </option>
+
+            <option value="Female">
+              Female
+            </option>
+
+            <option value="Other">
+              Other
+            </option>
           </select>
 
           <textarea
@@ -151,7 +167,10 @@ const AddPatient = () => {
             onChange={handleChange}
             style={styles.input}
           >
-            <option value="">Select Blood Group</option>
+            <option value="">
+              Select Blood Group
+            </option>
+
             <option value="A+">A+</option>
             <option value="A-">A-</option>
             <option value="B+">B+</option>
@@ -174,16 +193,23 @@ const AddPatient = () => {
           <button
             type="submit"
             disabled={loading}
-            style={styles.button}
+            style={{
+              ...styles.button,
+              opacity: loading ? 0.7 : 1,
+            }}
           >
-            {loading ? "Adding Patient..." : "Add Patient"}
+            {loading
+              ? "Adding Patient..."
+              : "Add Patient"}
           </button>
 
           {message && (
             <p
               style={{
                 ...styles.message,
-                color: message.includes("successfully")
+                color: message.includes(
+                  "successfully"
+                )
                   ? "green"
                   : "red",
               }}
@@ -213,7 +239,8 @@ const styles = {
     backgroundColor: "#ffffff",
     padding: "30px",
     borderRadius: "12px",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+    boxShadow:
+      "0 4px 15px rgba(0,0,0,0.1)",
   },
 
   heading: {

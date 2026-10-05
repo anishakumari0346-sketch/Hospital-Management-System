@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../services/app";
 
 const EditAppointment = () => {
   const [appointments, setAppointments] = useState([]);
@@ -26,16 +26,11 @@ const EditAppointment = () => {
   // =========================
   const fetchAppointments = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/appointment"
-      );
+      const response = await API.get("/appointment");
 
       setAppointments(response.data.appointments || []);
     } catch (error) {
-      console.error(
-        "Fetch Appointments Error:",
-        error
-      );
+      console.error("Fetch Appointments Error:", error);
 
       setMessage(
         error.response?.data?.message ||
@@ -49,16 +44,11 @@ const EditAppointment = () => {
   // =========================
   const fetchPatients = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/patient"
-      );
+      const response = await API.get("/patient");
 
       setPatients(response.data.patients || []);
     } catch (error) {
-      console.error(
-        "Fetch Patients Error:",
-        error
-      );
+      console.error("Fetch Patients Error:", error);
     }
   };
 
@@ -67,16 +57,11 @@ const EditAppointment = () => {
   // =========================
   const fetchDoctors = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/doctor"
-      );
+      const response = await API.get("/doctor");
 
       setDoctors(response.data.doctors || []);
     } catch (error) {
-      console.error(
-        "Fetch Doctors Error:",
-        error
-      );
+      console.error("Fetch Doctors Error:", error);
     }
   };
 
@@ -108,23 +93,13 @@ const EditAppointment = () => {
     let formattedDate = "";
 
     if (appointment.appointmentDate) {
-      const date = new Date(
-        appointment.appointmentDate
-      );
+      const date = new Date(appointment.appointmentDate);
 
       const year = date.getFullYear();
-      const month = String(
-        date.getMonth() + 1
-      ).padStart(2, "0");
-      const day = String(
-        date.getDate()
-      ).padStart(2, "0");
-      const hours = String(
-        date.getHours()
-      ).padStart(2, "0");
-      const minutes = String(
-        date.getMinutes()
-      ).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
 
       formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
     }
@@ -144,8 +119,7 @@ const EditAppointment = () => {
 
       reason: appointment.reason || "",
 
-      status:
-        appointment.status || "Pending",
+      status: appointment.status || "Pending",
     });
 
     setMessage("");
@@ -173,17 +147,36 @@ const EditAppointment = () => {
       return;
     }
 
+    if (!formData.patient) {
+      setMessage("Please select a patient.");
+      return;
+    }
+
+    if (!formData.doctor) {
+      setMessage("Please select a doctor.");
+      return;
+    }
+
+    if (!formData.appointmentDate) {
+      setMessage("Please select appointment date.");
+      return;
+    }
+
+    if (!formData.reason.trim()) {
+      setMessage("Please enter appointment reason.");
+      return;
+    }
+
     try {
       setSaving(true);
       setMessage("");
 
-      const response = await axios.put(
-        `http://localhost:5000/api/appointment/${selectedAppointment._id}`,
+      const response = await API.put(
+        `/appointment/${selectedAppointment._id}`,
         {
           patient: formData.patient,
           doctor: formData.doctor,
-          appointmentDate:
-            formData.appointmentDate,
+          appointmentDate: formData.appointmentDate,
           reason: formData.reason,
           status: formData.status,
         }
@@ -198,10 +191,7 @@ const EditAppointment = () => {
 
       await fetchAppointments();
     } catch (error) {
-      console.error(
-        "Update Appointment Error:",
-        error
-      );
+      console.error("Update Appointment Error:", error);
 
       setMessage(
         error.response?.data?.message ||
@@ -258,125 +248,89 @@ const EditAppointment = () => {
       {!selectedAppointment ? (
         <div style={styles.tableContainer}>
           {appointments.length === 0 ? (
-            <p style={styles.empty}>
-              No appointments found.
-            </p>
+            <div style={styles.empty}>
+              <p>No appointments found.</p>
+            </div>
           ) : (
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>
-                    Patient
-                  </th>
-
-                  <th style={styles.th}>
-                    Doctor
-                  </th>
-
-                  <th style={styles.th}>
-                    Specialization
-                  </th>
-
-                  <th style={styles.th}>
-                    Date & Time
-                  </th>
-
-                  <th style={styles.th}>
-                    Reason
-                  </th>
-
-                  <th style={styles.th}>
-                    Status
-                  </th>
-
-                  <th style={styles.th}>
-                    Action
-                  </th>
+                  <th style={styles.th}>Patient</th>
+                  <th style={styles.th}>Doctor</th>
+                  <th style={styles.th}>Specialization</th>
+                  <th style={styles.th}>Date & Time</th>
+                  <th style={styles.th}>Reason</th>
+                  <th style={styles.th}>Status</th>
+                  <th style={styles.th}>Action</th>
                 </tr>
               </thead>
 
               <tbody>
-                {appointments.map(
-                  (appointment) => (
-                    <tr key={appointment._id}>
-                      <td style={styles.td}>
-                        {appointment.patient?.name ||
-                          "Patient"}
-                      </td>
+                {appointments.map((appointment) => (
+                  <tr key={appointment._id}>
+                    <td style={styles.td}>
+                      {appointment.patient?.name || "Patient"}
+                    </td>
 
-                      <td style={styles.td}>
-                        {appointment.doctor?.name
-                          ? `Dr. ${appointment.doctor.name}`
-                          : "Doctor"}
-                      </td>
+                    <td style={styles.td}>
+                      {appointment.doctor?.name
+                        ? `Dr. ${appointment.doctor.name}`
+                        : "Doctor"}
+                    </td>
 
-                      <td style={styles.td}>
-                        {appointment.doctor
-                          ?.specialization || "-"}
-                      </td>
+                    <td style={styles.td}>
+                      {appointment.doctor?.specialization || "-"}
+                    </td>
 
-                      <td style={styles.td}>
-                        {appointment.appointmentDate
-                          ? new Date(
-                              appointment.appointmentDate
-                            ).toLocaleString()
-                          : "-"}
-                      </td>
+                    <td style={styles.td}>
+                      {appointment.appointmentDate
+                        ? new Date(
+                            appointment.appointmentDate
+                          ).toLocaleString()
+                        : "-"}
+                    </td>
 
-                      <td style={styles.td}>
-                        {appointment.reason || "-"}
-                      </td>
+                    <td style={styles.td}>
+                      {appointment.reason || "-"}
+                    </td>
 
-                      <td style={styles.td}>
-                        <span
-                          style={{
-                            ...styles.status,
-                            backgroundColor:
-                              appointment.status ===
-                              "Confirmed"
-                                ? "#dcfce7"
-                                : appointment.status ===
-                                  "Completed"
-                                ? "#dbeafe"
-                                : appointment.status ===
-                                  "Cancelled"
-                                ? "#fee2e2"
-                                : "#fef3c7",
+                    <td style={styles.td}>
+                      <span
+                        style={{
+                          ...styles.status,
+                          backgroundColor:
+                            appointment.status === "Confirmed"
+                              ? "#dcfce7"
+                              : appointment.status === "Completed"
+                              ? "#dbeafe"
+                              : appointment.status === "Cancelled"
+                              ? "#fee2e2"
+                              : "#fef3c7",
 
-                            color:
-                              appointment.status ===
-                              "Confirmed"
-                                ? "#166534"
-                                : appointment.status ===
-                                  "Completed"
-                                ? "#1e40af"
-                                : appointment.status ===
-                                  "Cancelled"
-                                ? "#991b1b"
-                                : "#92400e",
-                          }}
-                        >
-                          {appointment.status}
-                        </span>
-                      </td>
+                          color:
+                            appointment.status === "Confirmed"
+                              ? "#166534"
+                              : appointment.status === "Completed"
+                              ? "#1e40af"
+                              : appointment.status === "Cancelled"
+                              ? "#991b1b"
+                              : "#92400e",
+                        }}
+                      >
+                        {appointment.status}
+                      </span>
+                    </td>
 
-                      <td style={styles.td}>
-                        <button
-                          onClick={() =>
-                            handleEdit(
-                              appointment
-                            )
-                          }
-                          style={
-                            styles.editButton
-                          }
-                        >
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                )}
+                    <td style={styles.td}>
+                      <button
+                        onClick={() => handleEdit(appointment)}
+                        style={styles.editButton}
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           )}
@@ -410,8 +364,7 @@ const EditAppointment = () => {
                   key={patient._id}
                   value={patient._id}
                 >
-                  {patient.name} -{" "}
-                  {patient.phone}
+                  {patient.name} - {patient.phone}
                 </option>
               ))}
             </select>
@@ -437,8 +390,7 @@ const EditAppointment = () => {
                   key={doctor._id}
                   value={doctor._id}
                 >
-                  Dr. {doctor.name} -{" "}
-                  {doctor.specialization}
+                  Dr. {doctor.name} - {doctor.specialization}
                 </option>
               ))}
             </select>
@@ -451,9 +403,7 @@ const EditAppointment = () => {
             <input
               type="datetime-local"
               name="appointmentDate"
-              value={
-                formData.appointmentDate
-              }
+              value={formData.appointmentDate}
               onChange={handleChange}
               required
               style={styles.input}
@@ -550,8 +500,7 @@ const styles = {
     overflowX: "auto",
     backgroundColor: "#ffffff",
     borderRadius: "10px",
-    boxShadow:
-      "0 3px 12px rgba(0,0,0,0.08)",
+    boxShadow: "0 3px 12px rgba(0,0,0,0.08)",
   },
 
   table: {
@@ -595,8 +544,7 @@ const styles = {
     maxWidth: "650px",
     padding: "25px",
     borderRadius: "10px",
-    boxShadow:
-      "0 3px 12px rgba(0,0,0,0.08)",
+    boxShadow: "0 3px 12px rgba(0,0,0,0.08)",
   },
 
   label: {

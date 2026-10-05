@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../services/app";
 
 const AddAppointment = () => {
   const [patients, setPatients] = useState([]);
@@ -16,12 +16,12 @@ const AddAppointment = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  // ===============================
   // Fetch Patients
+  // ===============================
   const fetchPatients = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/patient"
-      );
+      const response = await API.get("/patient");
 
       setPatients(response.data.patients || []);
     } catch (error) {
@@ -29,12 +29,12 @@ const AddAppointment = () => {
     }
   };
 
+  // ===============================
   // Fetch Doctors
+  // ===============================
   const fetchDoctors = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/doctor"
-      );
+      const response = await API.get("/doctor");
 
       setDoctors(response.data.doctors || []);
     } catch (error) {
@@ -47,7 +47,9 @@ const AddAppointment = () => {
     fetchDoctors();
   }, []);
 
+  // ===============================
   // Handle Input
+  // ===============================
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -57,7 +59,9 @@ const AddAppointment = () => {
     }));
   };
 
+  // ===============================
   // Submit Appointment
+  // ===============================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -85,16 +89,13 @@ const AddAppointment = () => {
       setLoading(true);
       setMessage("");
 
-      const response = await axios.post(
-        "http://localhost:5000/api/appointment",
-        {
-          patient: formData.patient,
-          doctor: formData.doctor,
-          appointmentDate: formData.appointmentDate,
-          reason: formData.reason,
-          status: formData.status,
-        }
-      );
+      const response = await API.post("/appointment", {
+        patient: formData.patient,
+        doctor: formData.doctor,
+        appointmentDate: formData.appointmentDate,
+        reason: formData.reason,
+        status: formData.status,
+      });
 
       setMessage(
         response.data.message ||
@@ -176,8 +177,7 @@ const AddAppointment = () => {
                 key={doctor._id}
                 value={doctor._id}
               >
-                Dr. {doctor.name} -{" "}
-                {doctor.specialization}
+                Dr. {doctor.name} - {doctor.specialization}
               </option>
             ))}
           </select>

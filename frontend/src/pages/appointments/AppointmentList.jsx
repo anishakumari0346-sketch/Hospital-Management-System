@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../../services/app";
 
 const AppointmentList = () => {
   const [appointments, setAppointments] = useState([]);
@@ -9,15 +9,15 @@ const AppointmentList = () => {
 
   const navigate = useNavigate();
 
-  // Fetch all appointments
+  // ===============================
+  // Fetch All Appointments
+  // ===============================
   const fetchAppointments = async () => {
     try {
       setLoading(true);
       setMessage("");
 
-      const response = await axios.get(
-        "http://localhost:5000/api/appointment"
-      );
+      const response = await API.get("/appointment");
 
       setAppointments(response.data.appointments || []);
     } catch (error) {
@@ -36,13 +36,14 @@ const AppointmentList = () => {
     fetchAppointments();
   }, []);
 
-  // Change appointment status
+  // ===============================
+  // Change Appointment Status
+  // ===============================
   const updateStatus = async (id, status) => {
     try {
-      await axios.put(
-        `http://localhost:5000/api/appointment/${id}`,
-        { status }
-      );
+      await API.put(`/appointment/${id}`, {
+        status,
+      });
 
       setMessage("Appointment status updated successfully.");
 
@@ -57,6 +58,9 @@ const AppointmentList = () => {
     }
   };
 
+  // ===============================
+  // Loading
+  // ===============================
   if (loading) {
     return (
       <div style={styles.center}>
@@ -67,15 +71,11 @@ const AppointmentList = () => {
 
   return (
     <div style={styles.container}>
-
       {/* Header */}
       <div style={styles.header}>
-        <h2 style={styles.heading}>
-          Appointment List
-        </h2>
+        <h2 style={styles.heading}>Appointment List</h2>
 
         <div style={styles.buttonGroup}>
-
           {/* Add Appointment */}
           <button
             onClick={() => navigate("/appointments/add")}
@@ -91,7 +91,6 @@ const AppointmentList = () => {
           >
             Refresh
           </button>
-
         </div>
       </div>
 
@@ -111,7 +110,7 @@ const AppointmentList = () => {
         </p>
       )}
 
-      {/* No appointments */}
+      {/* No Appointments */}
       {appointments.length === 0 ? (
         <div style={styles.empty}>
           <p>No appointments found.</p>
@@ -126,17 +125,12 @@ const AppointmentList = () => {
       ) : (
         <div style={styles.tableContainer}>
           <table style={styles.table}>
-
             <thead>
               <tr>
                 <th style={styles.th}>Patient</th>
                 <th style={styles.th}>Doctor</th>
-                <th style={styles.th}>
-                  Specialization
-                </th>
-                <th style={styles.th}>
-                  Appointment Date
-                </th>
+                <th style={styles.th}>Specialization</th>
+                <th style={styles.th}>Appointment Date</th>
                 <th style={styles.th}>Reason</th>
                 <th style={styles.th}>Status</th>
                 <th style={styles.th}>Action</th>
@@ -146,11 +140,9 @@ const AppointmentList = () => {
             <tbody>
               {appointments.map((appointment) => (
                 <tr key={appointment._id}>
-
                   {/* Patient */}
                   <td style={styles.td}>
-                    {appointment.patient?.name ||
-                      "Patient"}
+                    {appointment.patient?.name || "Patient"}
                   </td>
 
                   {/* Doctor */}
@@ -162,8 +154,7 @@ const AppointmentList = () => {
 
                   {/* Specialization */}
                   <td style={styles.td}>
-                    {appointment.doctor
-                      ?.specialization || "-"}
+                    {appointment.doctor?.specialization || "-"}
                   </td>
 
                   {/* Date */}
@@ -186,26 +177,20 @@ const AppointmentList = () => {
                       style={{
                         ...styles.status,
                         backgroundColor:
-                          appointment.status ===
-                          "Confirmed"
+                          appointment.status === "Confirmed"
                             ? "#dcfce7"
-                            : appointment.status ===
-                              "Completed"
+                            : appointment.status === "Completed"
                             ? "#dbeafe"
-                            : appointment.status ===
-                              "Cancelled"
+                            : appointment.status === "Cancelled"
                             ? "#fee2e2"
                             : "#fef3c7",
 
                         color:
-                          appointment.status ===
-                          "Confirmed"
+                          appointment.status === "Confirmed"
                             ? "#166534"
-                            : appointment.status ===
-                              "Completed"
+                            : appointment.status === "Completed"
                             ? "#1e40af"
-                            : appointment.status ===
-                              "Cancelled"
+                            : appointment.status === "Cancelled"
                             ? "#991b1b"
                             : "#92400e",
                       }}
@@ -226,32 +211,18 @@ const AppointmentList = () => {
                       }
                       style={styles.select}
                     >
-                      <option value="Pending">
-                        Pending
-                      </option>
-
-                      <option value="Confirmed">
-                        Confirmed
-                      </option>
-
-                      <option value="Completed">
-                        Completed
-                      </option>
-
-                      <option value="Cancelled">
-                        Cancelled
-                      </option>
+                      <option value="Pending">Pending</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Cancelled">Cancelled</option>
                     </select>
                   </td>
-
                 </tr>
               ))}
             </tbody>
-
           </table>
         </div>
       )}
-
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../services/app";
 
 const EditDoctor = () => {
   const [doctors, setDoctors] = useState([]);
@@ -20,14 +20,13 @@ const EditDoctor = () => {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
+  // Fetch doctors
   const fetchDoctors = async () => {
     try {
       setLoading(true);
       setMessage("");
 
-      const response = await axios.get(
-        "http://localhost:5000/api/doctor"
-      );
+      const response = await API.get("/doctor");
 
       setDoctors(response.data.doctors || []);
     } catch (error) {
@@ -46,6 +45,7 @@ const EditDoctor = () => {
     fetchDoctors();
   }, []);
 
+  // Select doctor
   const handleEdit = (doctor) => {
     setSelectedDoctor(doctor);
 
@@ -63,6 +63,7 @@ const EditDoctor = () => {
     setMessage("");
   };
 
+  // Handle input
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -72,6 +73,7 @@ const EditDoctor = () => {
     }));
   };
 
+  // Handle available days
   const handleDayChange = (e) => {
     const { value, checked } = e.target;
 
@@ -79,10 +81,13 @@ const EditDoctor = () => {
       ...prev,
       availableDays: checked
         ? [...prev.availableDays, value]
-        : prev.availableDays.filter((day) => day !== value),
+        : prev.availableDays.filter(
+            (day) => day !== value
+          ),
     }));
   };
 
+  // Update doctor
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -94,15 +99,19 @@ const EditDoctor = () => {
       setSaving(true);
       setMessage("");
 
-      const response = await axios.put(
-        `http://localhost:5000/api/doctor/${selectedDoctor._id}`,
+      const response = await API.put(
+        `/doctor/${selectedDoctor._id}`,
         {
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
           specialization: formData.specialization,
-          experience: Number(formData.experience || 0),
-          consultationFee: Number(formData.consultationFee),
+          experience: Number(
+            formData.experience || 0
+          ),
+          consultationFee: Number(
+            formData.consultationFee || 0
+          ),
           availableDays: formData.availableDays,
           status: formData.status,
         }
@@ -117,7 +126,10 @@ const EditDoctor = () => {
 
       await fetchDoctors();
     } catch (error) {
-      console.error("Update Doctor Error:", error);
+      console.error(
+        "Update Doctor Error:",
+        error
+      );
 
       setMessage(
         error.response?.data?.message ||
@@ -128,6 +140,7 @@ const EditDoctor = () => {
     }
   };
 
+  // Cancel
   const handleCancel = () => {
     setSelectedDoctor(null);
     setMessage("");
@@ -173,8 +186,12 @@ const EditDoctor = () => {
                   <th style={styles.th}>Name</th>
                   <th style={styles.th}>Email</th>
                   <th style={styles.th}>Phone</th>
-                  <th style={styles.th}>Specialization</th>
-                  <th style={styles.th}>Experience</th>
+                  <th style={styles.th}>
+                    Specialization
+                  </th>
+                  <th style={styles.th}>
+                    Experience
+                  </th>
                   <th style={styles.th}>Fee</th>
                   <th style={styles.th}>Status</th>
                   <th style={styles.th}>Action</th>
@@ -185,19 +202,19 @@ const EditDoctor = () => {
                 {doctors.map((doctor) => (
                   <tr key={doctor._id}>
                     <td style={styles.td}>
-                      {doctor.name}
+                      {doctor.name || "-"}
                     </td>
 
                     <td style={styles.td}>
-                      {doctor.email}
+                      {doctor.email || "-"}
                     </td>
 
                     <td style={styles.td}>
-                      {doctor.phone}
+                      {doctor.phone || "-"}
                     </td>
 
                     <td style={styles.td}>
-                      {doctor.specialization}
+                      {doctor.specialization || "-"}
                     </td>
 
                     <td style={styles.td}>
@@ -205,7 +222,9 @@ const EditDoctor = () => {
                     </td>
 
                     <td style={styles.td}>
-                      ₹{doctor.consultationFee}
+                      ₹{Number(
+                        doctor.consultationFee || 0
+                      )}
                     </td>
 
                     <td style={styles.td}>
@@ -222,13 +241,15 @@ const EditDoctor = () => {
                               : "#991b1b",
                         }}
                       >
-                        {doctor.status}
+                        {doctor.status || "Active"}
                       </span>
                     </td>
 
                     <td style={styles.td}>
                       <button
-                        onClick={() => handleEdit(doctor)}
+                        onClick={() =>
+                          handleEdit(doctor)
+                        }
                         style={styles.editButton}
                       >
                         Edit
@@ -351,7 +372,7 @@ const EditDoctor = () => {
                     onChange={handleDayChange}
                   />
 
-                  {day}
+                  {" "}{day}
                 </label>
               ))}
             </div>
@@ -366,8 +387,13 @@ const EditDoctor = () => {
               onChange={handleChange}
               style={styles.input}
             >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              <option value="Active">
+                Active
+              </option>
+
+              <option value="Inactive">
+                Inactive
+              </option>
             </select>
 
             <div style={styles.buttons}>

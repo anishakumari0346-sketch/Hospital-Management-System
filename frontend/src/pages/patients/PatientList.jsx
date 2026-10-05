@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../../services/app";
 
 const PatientList = () => {
   const [patients, setPatients] = useState([]);
@@ -14,11 +14,9 @@ const PatientList = () => {
       setLoading(true);
       setMessage("");
 
-      const response = await axios.get(
-        "http://localhost:5000/api/patient"
-      );
+      const response = await API.get("/patient");
 
-      setPatients(response.data.patients || []);
+      setPatients(response.data.patients || response.data || []);
     } catch (error) {
       console.error("Fetch Patients Error:", error);
 
@@ -41,13 +39,11 @@ const PatientList = () => {
 
   return (
     <div style={styles.container}>
-
       {/* Header */}
       <div style={styles.header}>
         <h2>Patient List</h2>
 
         <div style={styles.buttonGroup}>
-
           {/* Add Patient Button */}
           <button
             onClick={() => navigate("/patients/add")}
@@ -63,7 +59,6 @@ const PatientList = () => {
           >
             Refresh
           </button>
-
         </div>
       </div>
 
@@ -85,7 +80,6 @@ const PatientList = () => {
       ) : (
         <div style={styles.tableContainer}>
           <table style={styles.table}>
-
             <thead>
               <tr>
                 <th style={styles.th}>Name</th>
@@ -102,7 +96,6 @@ const PatientList = () => {
             <tbody>
               {patients.map((patient) => (
                 <tr key={patient._id}>
-
                   <td style={styles.td}>
                     {patient.name}
                   </td>
@@ -134,15 +127,12 @@ const PatientList = () => {
                   <td style={styles.td}>
                     {patient.medicalHistory || "-"}
                   </td>
-
                 </tr>
               ))}
             </tbody>
-
           </table>
         </div>
       )}
-
     </div>
   );
 };

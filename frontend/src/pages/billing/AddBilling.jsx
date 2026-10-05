@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../services/app";
 
 const AddBilling = () => {
   const [patients, setPatients] = useState([]);
@@ -19,38 +19,53 @@ const AddBilling = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Fetch patients
+  // ===============================
+  // FETCH PATIENTS
+  // ===============================
   const fetchPatients = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/patient"
-      );
+      const response = await API.get("/patient");
 
       setPatients(response.data.patients || []);
     } catch (error) {
       console.error("Fetch Patients Error:", error);
+
+      setMessage(
+        error.response?.data?.message ||
+          "Unable to load patients."
+      );
     }
   };
 
-  // Fetch appointments
+  // ===============================
+  // FETCH APPOINTMENTS
+  // ===============================
   const fetchAppointments = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/appointment"
-      );
+      const response = await API.get("/appointment");
 
       setAppointments(response.data.appointments || []);
     } catch (error) {
       console.error("Fetch Appointments Error:", error);
+
+      setMessage(
+        error.response?.data?.message ||
+          "Unable to load appointments."
+      );
     }
   };
 
+  // ===============================
+  // LOAD DATA
+  // ===============================
   useEffect(() => {
     fetchPatients();
     fetchAppointments();
   }, []);
 
-  // Handle input
+  // ===============================
+  // HANDLE INPUT
+  // ===============================
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -58,19 +73,29 @@ const AddBilling = () => {
       ...prev,
       [name]: value,
     }));
+
+    // Clear message when user changes input
+    if (message) {
+      setMessage("");
+    }
   };
 
-  // Calculate total
+  // ===============================
+  // CALCULATE TOTAL
+  // ===============================
   const totalAmount =
     Number(formData.consultationFee || 0) +
     Number(formData.medicineCharges || 0) +
     Number(formData.testCharges || 0) +
     Number(formData.otherCharges || 0);
 
-  // Submit billing
+  // ===============================
+  // SUBMIT BILLING
+  // ===============================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Patient validation
     if (!formData.patient) {
       setMessage("Please select a patient.");
       return;
@@ -80,25 +105,47 @@ const AddBilling = () => {
       setLoading(true);
       setMessage("");
 
-      const response = await axios.post(
-        "http://localhost:5000/api/billing",
-        {
-          patient: formData.patient,
-          appointment: formData.appointment || undefined,
-          consultationFee: Number(formData.consultationFee || 0),
-          medicineCharges: Number(formData.medicineCharges || 0),
-          testCharges: Number(formData.testCharges || 0),
-          otherCharges: Number(formData.otherCharges || 0),
-          totalAmount,
-          paymentStatus: formData.paymentStatus,
-          paymentMethod: formData.paymentMethod,
-        }
+      const billingData = {
+        patient: formData.patient,
+        consultationFee: Number(
+          formData.consultationFee || 0
+        ),
+        medicineCharges: Number(
+          formData.medicineCharges || 0
+        ),
+        testCharges: Number(
+          formData.testCharges || 0
+        ),
+        otherCharges: Number(
+          formData.otherCharges || 0
+        ),
+        totalAmount: totalAmount,
+        paymentStatus: formData.paymentStatus,
+        paymentMethod: formData.paymentMethod,
+      };
+
+      // Appointment only if selected
+      if (formData.appointment) {
+        billingData.appointment =
+          formData.appointment;
+      }
+
+      const response = await API.post(
+        "/billing",
+        billingData
       );
 
-      console.log("Billing created:", response.data);
+      console.log(
+        "Billing created:",
+        response.data
+      );
 
-      setMessage("Bill created successfully!");
+      setMessage(
+        response.data.message ||
+          "Bill created successfully!"
+      );
 
+      // Reset form
       setFormData({
         patient: "",
         appointment: "",
@@ -110,7 +157,10 @@ const AddBilling = () => {
         paymentMethod: "Cash",
       });
     } catch (error) {
-      console.error("Add Billing Error:", error);
+      console.error(
+        "Add Billing Error:",
+        error
+      );
 
       setMessage(
         error.response?.data?.message ||
@@ -124,11 +174,19 @@ const AddBilling = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.heading}>Add Billing</h2>
+
+        <h2 style={styles.heading}>
+          Add Billing
+        </h2>
 
         <form onSubmit={handleSubmit}>
-          {/* Patient */}
-          <label style={styles.label}>Patient</label>
+
+          {/* ===============================
+              PATIENT
+          =============================== */}
+          <label style={styles.label}>
+            Patient
+          </label>
 
           <select
             name="patient"
@@ -137,17 +195,26 @@ const AddBilling = () => {
             required
             style={styles.input}
           >
-            <option value="">Select Patient</option>
+            <option value="">
+              Select Patient
+            </option>
 
             {patients.map((patient) => (
-              <option key={patient._id} value={patient._id}>
+              <option
+                key={patient._id}
+                value={patient._id}
+              >
                 {patient.name} - {patient.phone}
               </option>
             ))}
           </select>
 
-          {/* Appointment */}
-          <label style={styles.label}>Appointment</label>
+          {/* ===============================
+              APPOINTMENT
+          =============================== */}
+          <label style={styles.label}>
+            Appointment
+          </label>
 
           <select
             name="appointment"
@@ -155,24 +222,32 @@ const AddBilling = () => {
             onChange={handleChange}
             style={styles.input}
           >
-            <option value="">Select Appointment (Optional)</option>
+            <option value="">
+              Select Appointment (Optional)
+            </option>
 
-            {appointments.map((appointment) => (
-              <option
-                key={appointment._id}
-                value={appointment._id}
-              >
-                {appointment.appointmentDate
-                  ? new Date(
-                      appointment.appointmentDate
-                    ).toLocaleDateString()
-                  : "Appointment"}{" "}
-                - {appointment.reason}
-              </option>
-            ))}
+            {appointments.map(
+              (appointment) => (
+                <option
+                  key={appointment._id}
+                  value={appointment._id}
+                >
+                  {appointment.appointmentDate
+                    ? new Date(
+                        appointment.appointmentDate
+                      ).toLocaleDateString()
+                    : "Appointment"}{" "}
+                  -{" "}
+                  {appointment.reason ||
+                    "No reason"}
+                </option>
+              )
+            )}
           </select>
 
-          {/* Consultation Fee */}
+          {/* ===============================
+              CONSULTATION FEE
+          =============================== */}
           <label style={styles.label}>
             Consultation Fee
           </label>
@@ -184,10 +259,13 @@ const AddBilling = () => {
             value={formData.consultationFee}
             onChange={handleChange}
             min="0"
+            step="0.01"
             style={styles.input}
           />
 
-          {/* Medicine Charges */}
+          {/* ===============================
+              MEDICINE CHARGES
+          =============================== */}
           <label style={styles.label}>
             Medicine Charges
           </label>
@@ -199,10 +277,13 @@ const AddBilling = () => {
             value={formData.medicineCharges}
             onChange={handleChange}
             min="0"
+            step="0.01"
             style={styles.input}
           />
 
-          {/* Test Charges */}
+          {/* ===============================
+              TEST CHARGES
+          =============================== */}
           <label style={styles.label}>
             Test Charges
           </label>
@@ -214,10 +295,13 @@ const AddBilling = () => {
             value={formData.testCharges}
             onChange={handleChange}
             min="0"
+            step="0.01"
             style={styles.input}
           />
 
-          {/* Other Charges */}
+          {/* ===============================
+              OTHER CHARGES
+          =============================== */}
           <label style={styles.label}>
             Other Charges
           </label>
@@ -229,16 +313,26 @@ const AddBilling = () => {
             value={formData.otherCharges}
             onChange={handleChange}
             min="0"
+            step="0.01"
             style={styles.input}
           />
 
-          {/* Total */}
+          {/* ===============================
+              TOTAL
+          =============================== */}
           <div style={styles.totalBox}>
-            <span>Total Amount</span>
-            <strong>₹{totalAmount}</strong>
+            <span>
+              Total Amount
+            </span>
+
+            <strong>
+              ₹{totalAmount.toFixed(2)}
+            </strong>
           </div>
 
-          {/* Payment Status */}
+          {/* ===============================
+              PAYMENT STATUS
+          =============================== */}
           <label style={styles.label}>
             Payment Status
           </label>
@@ -249,12 +343,22 @@ const AddBilling = () => {
             onChange={handleChange}
             style={styles.input}
           >
-            <option value="Pending">Pending</option>
-            <option value="Paid">Paid</option>
-            <option value="Partial">Partial</option>
+            <option value="Pending">
+              Pending
+            </option>
+
+            <option value="Paid">
+              Paid
+            </option>
+
+            <option value="Partial">
+              Partial
+            </option>
           </select>
 
-          {/* Payment Method */}
+          {/* ===============================
+              PAYMENT METHOD
+          =============================== */}
           <label style={styles.label}>
             Payment Method
           </label>
@@ -265,21 +369,42 @@ const AddBilling = () => {
             onChange={handleChange}
             style={styles.input}
           >
-            <option value="Cash">Cash</option>
-            <option value="Card">Card</option>
-            <option value="UPI">UPI</option>
-            <option value="Online">Online</option>
+            <option value="Cash">
+              Cash
+            </option>
+
+            <option value="Card">
+              Card
+            </option>
+
+            <option value="UPI">
+              UPI
+            </option>
+
+            <option value="Online">
+              Online
+            </option>
           </select>
 
-          {/* Submit */}
+          {/* ===============================
+              SUBMIT
+          =============================== */}
           <button
             type="submit"
             disabled={loading}
-            style={styles.button}
+            style={{
+              ...styles.button,
+              opacity: loading ? 0.7 : 1,
+            }}
           >
-            {loading ? "Creating Bill..." : "Create Bill"}
+            {loading
+              ? "Creating Bill..."
+              : "Create Bill"}
           </button>
 
+          {/* ===============================
+              MESSAGE
+          =============================== */}
           {message && (
             <p
               style={{
@@ -294,11 +419,16 @@ const AddBilling = () => {
               {message}
             </p>
           )}
+
         </form>
       </div>
     </div>
   );
 };
+
+// ===============================
+// STYLES
+// ===============================
 
 const styles = {
   container: {
@@ -316,18 +446,21 @@ const styles = {
     backgroundColor: "#fff",
     padding: "30px",
     borderRadius: "12px",
-    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+    boxShadow:
+      "0 4px 15px rgba(0, 0, 0, 0.1)",
   },
 
   heading: {
     textAlign: "center",
     marginBottom: "25px",
+    color: "#1f2937",
   },
 
   label: {
     display: "block",
     fontWeight: "600",
     marginBottom: "6px",
+    color: "#374151",
   },
 
   input: {
@@ -338,6 +471,7 @@ const styles = {
     borderRadius: "6px",
     boxSizing: "border-box",
     fontSize: "15px",
+    backgroundColor: "#fff",
   },
 
   totalBox: {
@@ -359,6 +493,7 @@ const styles = {
     border: "none",
     borderRadius: "6px",
     fontSize: "16px",
+    fontWeight: "600",
     cursor: "pointer",
   },
 

@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-import API from "../../services/api";
+import API from "../../services/app";
 
 const DoctorForm = () => {
   const navigate = useNavigate();
@@ -24,52 +21,46 @@ const DoctorForm = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
 
-  // ==========================
-  // FETCH DOCTOR FOR EDIT
-  // ==========================
   useEffect(() => {
     if (editing) {
       fetchDoctor();
     }
   }, [id]);
 
+  // Fetch doctor for edit
   const fetchDoctor = async () => {
     try {
+      setFetching(true);
+
       const res = await API.get(`/doctor/${id}`);
 
       const doctor = res.data.doctor || res.data;
 
       setForm({
         name: doctor.name || "",
-        specialization:
-          doctor.specialization || "",
+        specialization: doctor.specialization || "",
         email: doctor.email || "",
         phone: doctor.phone || "",
-        experience:
-          doctor.experience ?? "",
-        consultationFee:
-          doctor.consultationFee ?? "",
-        availableDays:
-          doctor.availableDays || [],
+        experience: doctor.experience ?? "",
+        consultationFee: doctor.consultationFee ?? "",
+        availableDays: doctor.availableDays || [],
         status: doctor.status || "Active",
       });
     } catch (error) {
-      console.error(
-        "Fetch Doctor Error:",
-        error
-      );
+      console.error("Fetch Doctor Error:", error);
 
       alert(
         error.response?.data?.message ||
           "Unable to load doctor details"
       );
+    } finally {
+      setFetching(false);
     }
   };
 
-  // ==========================
-  // HANDLE INPUT
-  // ==========================
+  // Handle input
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -79,36 +70,21 @@ const DoctorForm = () => {
     }));
   };
 
-  // ==========================
-  // HANDLE AVAILABLE DAYS
-  // ==========================
+  // Handle available days
   const handleDayChange = (e) => {
     const { value, checked } = e.target;
 
-    setForm((prev) => {
-      if (checked) {
-        return {
-          ...prev,
-          availableDays: [
-            ...prev.availableDays,
-            value,
-          ],
-        };
-      }
-
-      return {
-        ...prev,
-        availableDays:
-          prev.availableDays.filter(
+    setForm((prev) => ({
+      ...prev,
+      availableDays: checked
+        ? [...prev.availableDays, value]
+        : prev.availableDays.filter(
             (day) => day !== value
           ),
-      };
-    });
+    }));
   };
 
-  // ==========================
-  // SUBMIT FORM
-  // ==========================
+  // Submit form
   const submit = async (e) => {
     e.preventDefault();
 
@@ -126,12 +102,10 @@ const DoctorForm = () => {
             ? 0
             : Number(form.experience),
 
-        consultationFee: Number(
-          form.consultationFee
-        ),
+        consultationFee:
+          Number(form.consultationFee) || 0,
 
-        availableDays:
-          form.availableDays,
+        availableDays: form.availableDays,
 
         status: form.status,
       };
@@ -142,26 +116,19 @@ const DoctorForm = () => {
           doctorData
         );
 
-        alert(
-          "Doctor updated successfully!"
-        );
+        alert("Doctor updated successfully!");
       } else {
         await API.post(
           "/doctor",
           doctorData
         );
 
-        alert(
-          "Doctor added successfully!"
-        );
+        alert("Doctor added successfully!");
       }
 
       navigate("/doctors");
     } catch (error) {
-      console.error(
-        "Doctor Submit Error:",
-        error
-      );
+      console.error("Doctor Submit Error:", error);
 
       alert(
         error.response?.data?.message ||
@@ -172,24 +139,26 @@ const DoctorForm = () => {
     }
   };
 
+  if (fetching) {
+    return (
+      <div className="text-center p-4">
+        <h4>Loading doctor...</h4>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {/* ==========================
-          PAGE HEADER
-      ========================== */}
+      {/* Page Header */}
       <div className="page-header">
         <div>
           <h2>
-            {editing
-              ? "Edit Doctor"
-              : "Add Doctor"}
+            {editing ? "Edit Doctor" : "Add Doctor"}
           </h2>
         </div>
       </div>
 
-      {/* ==========================
-          FORM CARD
-      ========================== */}
+      {/* Form Card */}
       <div className="content-card">
         <form onSubmit={submit}>
           <div className="row">
@@ -214,17 +183,13 @@ const DoctorForm = () => {
             {/* Specialization */}
             <div className="col-md-6">
               <div className="form-group">
-                <label>
-                  Specialization
-                </label>
+                <label>Specialization</label>
 
                 <input
                   type="text"
                   name="specialization"
                   className="form-control"
-                  value={
-                    form.specialization
-                  }
+                  value={form.specialization}
                   onChange={handleChange}
                   placeholder="Cardiologist"
                   required
@@ -269,9 +234,7 @@ const DoctorForm = () => {
             {/* Experience */}
             <div className="col-md-6">
               <div className="form-group">
-                <label>
-                  Experience (Years)
-                </label>
+                <label>Experience (Years)</label>
 
                 <input
                   type="number"
@@ -288,17 +251,13 @@ const DoctorForm = () => {
             {/* Consultation Fee */}
             <div className="col-md-6">
               <div className="form-group">
-                <label>
-                  Consultation Fee
-                </label>
+                <label>Consultation Fee</label>
 
                 <input
                   type="number"
                   name="consultationFee"
                   className="form-control"
-                  value={
-                    form.consultationFee
-                  }
+                  value={form.consultationFee}
                   onChange={handleChange}
                   placeholder="500"
                   min="0"
@@ -310,9 +269,7 @@ const DoctorForm = () => {
             {/* Available Days */}
             <div className="col-12">
               <div className="form-group">
-                <label>
-                  Available Days
-                </label>
+                <label>Available Days</label>
 
                 <div
                   style={{
@@ -335,8 +292,7 @@ const DoctorForm = () => {
                       key={day}
                       style={{
                         display: "flex",
-                        alignItems:
-                          "center",
+                        alignItems: "center",
                         gap: "5px",
                       }}
                     >
@@ -346,9 +302,7 @@ const DoctorForm = () => {
                         checked={form.availableDays.includes(
                           day
                         )}
-                        onChange={
-                          handleDayChange
-                        }
+                        onChange={handleDayChange}
                       />
 
                       {day}
@@ -397,9 +351,7 @@ const DoctorForm = () => {
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={() =>
-              navigate("/doctors")
-            }
+            onClick={() => navigate("/doctors")}
           >
             Cancel
           </button>
