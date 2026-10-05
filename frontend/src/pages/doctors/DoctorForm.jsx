@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import API from "../../services/app";
+import API from "../../services/api";
 
 const DoctorForm = () => {
   const navigate = useNavigate();

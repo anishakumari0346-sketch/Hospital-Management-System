@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import API from "../../services/app";
+import API from "../../services/api";
 
 const AddAppointment = () => {
   const [patients, setPatients] = useState([]);

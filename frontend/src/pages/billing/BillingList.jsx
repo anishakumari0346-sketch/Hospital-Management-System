@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../../services/app";
+import API from "../../services/api";
 
 const BillingList = () => {
   const [bills, setBills] = useState([]);
